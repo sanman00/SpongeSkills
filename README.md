@@ -1,2 +1,3 @@
 # SpongeSkills
-A plugin that adds skills to Minecraft
+
+SpongeSkills is a plugin that adds skills to Minecraft.
