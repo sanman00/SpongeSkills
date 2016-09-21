@@ -1,10 +1,11 @@
 package com.comze.sanman00.spongeskills.api.skill.experience;
 
-import com.comze.sanman00.spongeskills.api.PlayerWrapper;
+import com.comze.sanman00.spongeskills.api.player.PlayerWrapper;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 
 /**
- * Represents the experience of a skill.
+ * Represents the experience of a skill. Instances of this class are per-player; 
+ * they do not represent a world, the server, etc.
  */
 public interface SkillExperience {
     /**
