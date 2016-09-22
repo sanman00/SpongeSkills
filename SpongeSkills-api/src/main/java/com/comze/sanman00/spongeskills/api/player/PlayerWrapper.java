@@ -1,5 +1,6 @@
 package com.comze.sanman00.spongeskills.api.player;
 
+import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.api.skill.experience.SkillExperience;
 import java.util.Collection;
 
@@ -25,9 +26,11 @@ public interface PlayerWrapper<T> {
     /**
      * Levels up the player by a single level. This may increase the amount 
      * of experience the player has.
+     * 
+     * @param skill The skill to level up
      */
-    default void levelUp() {
-        levelUp(1);
+    default void levelUp(Skill skill) {
+        levelUp(1, skill);
     }
     
     /**
@@ -35,16 +38,18 @@ public interface PlayerWrapper<T> {
      * of experience the player has.
      * 
      * @param amount The number of levels to level up the player by
+     * @param skill The skill to level up
      */
-    void levelUp(int amount);
+    void levelUp(int amount, Skill skill);
     
     /**
      * Gives the player a certain amount of experience. This may cause the player
      * to level up.
      * 
      * @param amount The amount of experience to give
+     * @param skill The skill to give experience to
      */
-    void giveExperience(int amount);
+    void giveExperience(int amount, Skill skill);
     
     /**
      * Gets all the experience the player has. No updates are made to the collection 

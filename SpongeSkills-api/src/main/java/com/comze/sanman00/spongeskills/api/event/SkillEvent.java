@@ -14,7 +14,7 @@ public interface SkillEvent {
      * 
      * @return The cause of this event
      */
-    Optional<? extends Object> getCause();
+    Optional<? extends Object> getEventCause();
     
     /**
      * Gets the skill that was involved or affected in this event.
