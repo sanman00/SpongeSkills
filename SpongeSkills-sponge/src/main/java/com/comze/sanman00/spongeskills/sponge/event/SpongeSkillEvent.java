@@ -6,15 +6,15 @@ import java.util.Optional;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 
-public class SpongeSkillEvent implements SkillEvent, Event {
+public abstract class SpongeSkillEvent implements SkillEvent, Event {
     private final Cause cause;
     private final Skill skill;
-    
+
     public SpongeSkillEvent(Cause cause, Skill skill) {
         this.cause = cause;
         this.skill = skill;
     }
-    
+
     @Override
     public Optional<? extends Object> getEventCause() {
         return Optional.of(getCause());
@@ -28,5 +28,5 @@ public class SpongeSkillEvent implements SkillEvent, Event {
     @Override
     public Cause getCause() {
         return this.cause;
-    }    
+    }
 }
