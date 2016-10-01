@@ -8,4 +8,9 @@ public class Main {
     public static final String PLUGIN_NAME = "SpongeSkills";
     public static final String PLUGIN_VERSION = "0.0.0";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
+    public static final Main INSTANCE = new Main();
+
+    private Main() {
+        
+    }
 }

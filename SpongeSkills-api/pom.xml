@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.comze.sanman00</groupId>
-        <artifactId>SpongeSkills</artifactId>
+        <artifactId>SpongeSkills-parent</artifactId>
         <version>0.0.0</version>
     </parent>
     <artifactId>SpongeSkills-api</artifactId>
