@@ -2,7 +2,7 @@ package com.comze.sanman00.spongeskills.api.player;
 
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.api.skill.experience.SkillExperience;
-import java.util.Collection;
+import java.util.Map;
 
 /**
  * A wrapper for a player instance.
@@ -52,11 +52,12 @@ public interface PlayerWrapper<T> {
     void giveExperience(int amount, Skill skill);
     
     /**
-     * Gets all the experience the player has. No updates are made to the collection 
-     * once this method returns, therefore, the collection should be immutable to
-     * ensure this.
+     * Gets all the experience the player has. No updates are made to the map
+     * once this method returns (i.e. this is not a live view of the map), therefore, 
+     * the map should be immutable to ensure this. The map must not be {@code null}.
      * 
-     * @return The {@link SkillExperience} instances that belong to this player
+     * @return A {@code Map} of the {@link SkillExperience} instances that belong to 
+     * this player
      */
-    Collection<SkillExperience> getExperience();
+    Map<Skill, SkillExperience> getExperience();
 }

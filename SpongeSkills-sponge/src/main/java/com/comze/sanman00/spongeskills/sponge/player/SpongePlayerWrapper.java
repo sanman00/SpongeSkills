@@ -3,10 +3,7 @@ package com.comze.sanman00.spongeskills.sponge.player;
 import com.comze.sanman00.spongeskills.api.player.PlayerWrapper;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.api.skill.experience.SkillExperience;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 import org.spongepowered.api.entity.living.player.Player;
 
 public final class SpongePlayerWrapper implements PlayerWrapper<Player> {
@@ -32,9 +29,8 @@ public final class SpongePlayerWrapper implements PlayerWrapper<Player> {
     }
 
     @Override
-    public Collection<SkillExperience> getExperience() {
-        //TODO
-        List<SkillExperience> list = Lists.newArrayList();
-        return ImmutableList.copyOf(list);
+    public Map<Skill, SkillExperience> getExperience() {
+        //TODO 
+        return null;
     }
 }
