@@ -1,5 +1,7 @@
 package com.comze.sanman00.spongeskills.sponge;
 
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 @Plugin(id = Main.PLUGIN_ID, name = Main.PLUGIN_NAME, version = Main.PLUGIN_VERSION, description = Main.PLUGIN_DESC)
@@ -12,5 +14,11 @@ public class Main {
 
     private Main() {
         
+    }
+    
+    public void onBlockBreak(ChangeBlockEvent.Break e) {
+        e.getTransactions().forEach(t -> {
+            BlockType type = t.getOriginal().getState().getType();
+        });
     }
 }
