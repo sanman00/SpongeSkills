@@ -31,10 +31,10 @@ public interface PlayerLevelChangeEvent extends SkillEvent {
     int getLevelAfter();
     
     /**
-     * Gets whether the player leveled up or whether their level was manually 
-     * changed.
+     * Gets the difference between the previous level and the new level.
      * 
-     * @return Whether or not the player leveled up
+     * @return The difference between the current level and the previous level, which
+     * may be negative
      */
-    boolean isLevelUp();
+    int getDifference();
 }

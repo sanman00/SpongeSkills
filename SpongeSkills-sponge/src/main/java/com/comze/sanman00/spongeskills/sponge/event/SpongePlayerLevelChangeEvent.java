@@ -10,7 +10,6 @@ public class SpongePlayerLevelChangeEvent extends SpongeSkillEvent implements Pl
         private SpongePlayerWrapper player;
         private int levelBefore;
         private int levelAfter;
-        private boolean levelUp;
         private Cause cause;
         private Skill skill;
 
@@ -43,13 +42,8 @@ public class SpongePlayerLevelChangeEvent extends SpongeSkillEvent implements Pl
             return this;
         }
 
-        public Builder levelUp(boolean isLevelUp) {
-            this.levelUp = isLevelUp;
-            return this;
-        }
-
         public SpongePlayerLevelChangeEvent build() {
-            return new SpongePlayerLevelChangeEvent(this.cause, this.skill, this.player, this.levelBefore, this.levelAfter, this.levelUp);
+            return new SpongePlayerLevelChangeEvent(this.cause, this.skill, this.player, this.levelBefore, this.levelAfter);
         }
     }
 
@@ -60,14 +54,12 @@ public class SpongePlayerLevelChangeEvent extends SpongeSkillEvent implements Pl
     private final SpongePlayerWrapper player;
     private final int levelBefore;
     private final int levelAfter;
-    private final boolean levelUp;
 
-    public SpongePlayerLevelChangeEvent(Cause cause, Skill skill, SpongePlayerWrapper player, int levelBefore, int levelAfter, boolean levelUp) {
+    public SpongePlayerLevelChangeEvent(Cause cause, Skill skill, SpongePlayerWrapper player, int levelBefore, int levelAfter) {
         super(cause, skill);
         this.player = player;
         this.levelBefore = levelBefore;
         this.levelAfter = levelAfter;
-        this.levelUp = levelUp;
     }
 
     @Override
@@ -86,7 +78,7 @@ public class SpongePlayerLevelChangeEvent extends SpongeSkillEvent implements Pl
     }
 
     @Override
-    public boolean isLevelUp() {
-        return this.levelUp;
+    public int getDifference() {
+        return this.levelAfter - this.levelBefore;
     }
 }

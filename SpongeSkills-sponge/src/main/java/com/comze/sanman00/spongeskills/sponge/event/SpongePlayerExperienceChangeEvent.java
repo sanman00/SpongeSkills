@@ -76,4 +76,9 @@ public class SpongePlayerExperienceChangeEvent extends SpongeSkillEvent implemen
     public int getExperienceBefore() {
         return this.expBefore;
     }
+
+    @Override
+    public int getDifference() {
+        return this.expAfter - this.expBefore;
+    }
 }

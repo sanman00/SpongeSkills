@@ -8,6 +8,7 @@ import com.comze.sanman00.spongeskills.sponge.player.SpongePlayerWrapper;
 public final class SpongeSkillExperience implements SkillExperience {
     private final Skill skill;
     private final SpongePlayerWrapper player;
+    //Public and non-final to allow modification, although a method could be used instead
     public int level;
     public int totalExp;
     public int remainingExp;

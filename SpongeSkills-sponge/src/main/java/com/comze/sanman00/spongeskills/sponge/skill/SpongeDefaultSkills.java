@@ -12,6 +12,10 @@ public final class SpongeDefaultSkills {
         
     }
     
+    /**
+     * Initialises the {@link DefaultSkills} class so that other plugins can use
+     * the skills defined in that class.
+     */
     public static void init() {
         setSkillFieldValue("MINING", new SpongeSkill("sanman.mining", "Mining"));
         setSkillFieldValue("WOOD_CUTTING", new SpongeSkill("sanman.woodcutting", "Woodcutting"));

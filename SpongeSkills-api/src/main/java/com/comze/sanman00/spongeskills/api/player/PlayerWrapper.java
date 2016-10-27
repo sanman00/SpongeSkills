@@ -21,7 +21,7 @@ public interface PlayerWrapper<T> {
      * 
      * @return The player that was wrapped
      */
-    T getPlayer();
+    T getWrappedPlayer();
     
     /**
      * Levels up the player by a single level. This may increase the amount 
