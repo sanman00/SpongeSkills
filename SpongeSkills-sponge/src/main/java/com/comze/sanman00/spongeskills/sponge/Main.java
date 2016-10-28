@@ -28,13 +28,13 @@ import org.spongepowered.api.text.format.TextColors;
 public final class Main {
     public static final String PLUGIN_ID = "spongeskills";
     public static final String PLUGIN_NAME = "SpongeSkills";
-    public static final String PLUGIN_VERSION = "0.0.0";
+    public static final String PLUGIN_VERSION = "0.0.1";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
     public static final Main INSTANCE = new Main();
     @Inject
     private Logger logger;
 
-    private Main() {
+    public Main() {
         
     }
     
