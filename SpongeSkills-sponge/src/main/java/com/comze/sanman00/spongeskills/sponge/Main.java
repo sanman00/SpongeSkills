@@ -1,23 +1,33 @@
 package com.comze.sanman00.spongeskills.sponge;
 
-import com.comze.sanman00.spongeskills.api.event.PlayerExperienceChangeEvent;
-import com.comze.sanman00.spongeskills.api.event.PlayerLevelChangeEvent;
-import com.comze.sanman00.spongeskills.api.event.SkillTriggerEvent;
+import com.comze.sanman00.spongeskills.api.skill.DefaultSkills;
+import com.comze.sanman00.spongeskills.api.skill.Skill;
+import com.comze.sanman00.spongeskills.sponge.config.ConfigManager;
 import com.comze.sanman00.spongeskills.sponge.config.SkillTriggerDataManager;
+import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerExperienceChangeEvent;
+import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerLevelChangeEvent;
 import com.comze.sanman00.spongeskills.sponge.event.SpongeSkillTriggerEvent;
+import com.comze.sanman00.spongeskills.sponge.player.SpongePlayerWrapper;
 import com.comze.sanman00.spongeskills.sponge.skill.SpongeDefaultSkills;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.data.Transaction;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
@@ -28,11 +38,17 @@ import org.spongepowered.api.text.format.TextColors;
 public final class Main {
     public static final String PLUGIN_ID = "spongeskills";
     public static final String PLUGIN_NAME = "SpongeSkills";
-    public static final String PLUGIN_VERSION = "0.0.1";
+    public static final String PLUGIN_VERSION = "0.0.2";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
     public static final Main INSTANCE = new Main();
     @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path configDir;
+    @Inject
     private Logger logger;
+    private ConfigManager configManager;
+    private CommentedConfigurationNode acceptedBlocksNode;
+    private Map<Skill, Set<BlockType>> acceptedBlocks;
 
     public Main() {
         
@@ -46,64 +62,68 @@ public final class Main {
         }
         return this.logger;
     }
+
+    public ConfigManager getConfigManager() {
+        return this.configManager;
+    }
     
     // Event handlers
     
     @Listener
     public void onPreInit(GamePreInitializationEvent e) {
         SpongeDefaultSkills.init();
+        //Load config
+        this.configManager = new ConfigManager(this.configDir.toAbsolutePath().resolve("config.hocon"));
+        this.configManager.load();
+        this.acceptedBlocksNode = this.configManager.getConfig().getNode("Skills", "AcceptedBlocks");
+        try {
+            Map<Skill, Set<BlockType>> skillBlockMap = new HashMap<>();
+            skillBlockMap.put(DefaultSkills.MINING, SkillTriggerDataManager.DEFAULT_MINING_BLOCK_TRIGGERS);
+            skillBlockMap.put(DefaultSkills.WOOD_CUTTING, SkillTriggerDataManager.DEFAULT_WOOD_CUTTING_BLOCK_TRIGGERS);
+            this.acceptedBlocks = this.acceptedBlocksNode.getValue(new TypeToken<Map<Skill, Set<BlockType>>>() {}, skillBlockMap);
+        }
+        catch (ObjectMappingException ex) {
+            ex.printStackTrace();
+        }
     }
     
     @Listener
-    public void onBlockBreak(ChangeBlockEvent.Break e) {
-        e.getTransactions().forEach(transaction -> {
-            SkillTriggerDataManager.getAllTriggers().values().forEach(triggerMap -> {
-                triggerMap.get(SkillTriggerDataManager.TriggerType.BLOCK).forEach(obj -> this.processTriggerObject(obj, SkillTriggerDataManager.TriggerType.BLOCK, false, transaction));
-            });
-        });
-    }
-    
-    /**
-     * Processes the given objects by performing the appropriate action based on 
-     * their type.
-     * 
-     * The first object must be the trigger object, the second should be the trigger
-     * type and the third should be whether or not the trigger object is executable
-     * (this parameter may be ignored for some trigger types).
-     * 
-     * @param objects Objects to be processed
-     */
-    @SuppressWarnings("unchecked")
-    void processTriggerObject(Object... objects) {
-        if (objects[0] == null) {
-            throw new IllegalArgumentException("Trigger object must not be null!");
-        }
-        switch ((SkillTriggerDataManager.TriggerType) objects[1]) {
-            case BLOCK:
-                BlockType type = (BlockType) objects[0];
-                if (type == ((Transaction<BlockSnapshot>) objects[3]).getOriginal().getState().getType()) {
+    public void onEventFire(Event event, @First Player player) {
+        SkillTriggerDataManager.getAllTriggers().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(event))
+                .forEach(entry -> {
                     Sponge.getEventManager().post(SpongeSkillTriggerEvent.builder()
-                            .cause(Cause.of(NamedCause.of("TriggerObject", objects[0]), NamedCause.of("TriggerType", objects[1])))
-                            .build());
-                }
-                return;
-        }
-        Object[] arguments = Arrays.copyOfRange(objects, 1, objects.length - 1); //copy the array except the trigger object
+                            .cause(Cause.of(NamedCause.of("Event", event), NamedCause.of("Firer", Sponge.getPluginManager().getPlugin(PLUGIN_ID).get())))
+                            .skill(entry.getKey())
+                            .player(new SpongePlayerWrapper(player))
+                            .build()
+                    );
+                });
     }
     
     // Plugin Event Handlers
     
     @Listener
-    public void onPlayerExperienceChange(PlayerExperienceChangeEvent e) {
-        ((Player) e.getPlayer().getWrappedPlayer()).sendMessage(ChatTypes.ACTION_BAR, Text.of(TextColors.YELLOW, "You got" + e.getDifference() + " experience!")); //test
+    public void onPlayerExperienceChange(SpongePlayerExperienceChangeEvent e) {
+        e.getPlayer().getWrappedPlayer().sendMessage(ChatTypes.ACTION_BAR, Text.of(TextColors.YELLOW, "You got" + e.getDifference() + " experience!")); //test
     }
     
     @Listener
-    public void onPlayerLevelChange(PlayerLevelChangeEvent e) {
+    public void onPlayerLevelChange(SpongePlayerLevelChangeEvent e) {
         
     }
+    
     @Listener
-    public void onSkillTrigger(SkillTriggerEvent e) {
-        
+    public void onSkillTrigger(SpongeSkillTriggerEvent e) {
+        Event event = e.getCause().first(Event.class).get();
+        Skill skill = e.getSkill();
+        if (event instanceof ChangeBlockEvent) {
+            BlockType type = ((ChangeBlockEvent) event).getTransactions().get(0).getOriginal().getState().getType();
+            
+            if (this.acceptedBlocks.get(skill).contains(type)) {
+                e.getPlayer().giveExperience(1, skill);
+                //TODO Check how much experience this block gives
+            }
+        }
     }
 }

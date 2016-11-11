@@ -3,8 +3,10 @@ package com.comze.sanman00.spongeskills.sponge.player;
 import com.comze.sanman00.spongeskills.api.player.PlayerWrapper;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.api.skill.experience.SkillExperience;
+import com.comze.sanman00.spongeskills.sponge.data.PluginKeys;
 import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerExperienceChangeEvent;
 import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerLevelChangeEvent;
+import com.google.inject.internal.util.ImmutableMap;
 import java.util.Map;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -55,7 +57,6 @@ public final class SpongePlayerWrapper implements PlayerWrapper<Player> {
 
     @Override
     public Map<Skill, SkillExperience> getExperience() {
-        //TODO 
-        return null;
+        return ImmutableMap.copyOf(player.get(PluginKeys.SKILL_EXPERIENCE).get());
     }
 }

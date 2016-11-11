@@ -59,4 +59,8 @@ public final class DefaultSkills {
      * Skill that represents the usage of a bow to kill mobs.
      */
     public static final Skill ARCHERY = null;
+    /**
+     * Skill that represents the catching of fish with a fishing rod.
+     */
+    public static final Skill FISHING = null;
 }

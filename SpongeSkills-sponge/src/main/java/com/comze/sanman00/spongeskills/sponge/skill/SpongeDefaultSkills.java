@@ -28,6 +28,7 @@ public final class SpongeDefaultSkills {
         setSkillFieldValue("UNARMED_COMBAT", new SpongeSkill("sanman.unarmedcombat", "Unarmed Combat"));
         setSkillFieldValue("FARMING", new SpongeSkill("sanman.farming", "Farming"));
         setSkillFieldValue("ARCHERY", new SpongeSkill("sanman.archery", "Archery"));
+        setSkillFieldValue("FISHING", new SpongeSkill("sanman.fishing", "Fishing"));
     }
     
     private static void setFieldValue(Class<?> clazz, String skillName, Object value) {

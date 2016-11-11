@@ -13,3 +13,4 @@ hs_err_pid*
 /target/
 /SpongeSkills-api/target/
 /SpongeSkills-sponge/target/
+/SpongeSkills-sponge/dependency-reduced-pom.xml
