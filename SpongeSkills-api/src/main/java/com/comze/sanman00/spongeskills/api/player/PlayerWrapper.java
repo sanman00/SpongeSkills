@@ -3,6 +3,7 @@ package com.comze.sanman00.spongeskills.api.player;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.api.skill.experience.SkillExperience;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * A wrapper for a player instance.
@@ -60,4 +61,21 @@ public interface PlayerWrapper<T> {
      * this player
      */
     Map<Skill, SkillExperience> getExperience();
+    
+    /**
+     * Gets the experience the player has for the specified skill.
+     * 
+     * @param skill Skill to get experience for
+     * @return The experience the player has for the specified skill
+     */
+    default SkillExperience getExperience(Skill skill) {
+        return getExperience().get(skill);
+    }
+    
+    /**
+     * Gets the UUID of the player represented by this wrapper.
+     * 
+     * @return The UUID of the player represented by this wrapper
+     */
+    UUID getPlayerUUID();
 }

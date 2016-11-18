@@ -1,7 +1,6 @@
 package com.comze.sanman00.spongeskills.sponge.event;
 
 import com.comze.sanman00.spongeskills.api.event.SkillTriggerEvent;
-import com.comze.sanman00.spongeskills.api.player.PlayerWrapper;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.sponge.player.SpongePlayerWrapper;
 import org.spongepowered.api.event.cause.Cause;
@@ -47,7 +46,7 @@ public class SpongeSkillTriggerEvent extends SpongeSkillEvent implements SkillTr
     }
 
     @Override
-    public PlayerWrapper<?> getPlayer() {
+    public SpongePlayerWrapper getPlayer() {
         return this.player;
     }
 }

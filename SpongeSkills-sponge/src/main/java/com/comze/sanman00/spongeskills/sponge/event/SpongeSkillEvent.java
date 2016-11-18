@@ -32,7 +32,6 @@ public abstract class SpongeSkillEvent implements SkillEvent, Event, Cancellable
         return this.cause;
     }
     
-    
     @Override
     public boolean isCancelled() {
         return this.cancelled;
