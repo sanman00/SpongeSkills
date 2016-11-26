@@ -62,7 +62,7 @@ import org.spongepowered.api.world.World;
 public final class Main {
     public static final String PLUGIN_ID = "spongeskills";
     public static final String PLUGIN_NAME = "SpongeSkills";
-    public static final String PLUGIN_VERSION = "0.0.3";
+    public static final String PLUGIN_VERSION = "0.0.5";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
     public static final Main INSTANCE = new Main();
     @Inject
@@ -174,10 +174,15 @@ public final class Main {
         if (event instanceof ChangeBlockEvent.Break) {
             BlockSnapshot snapshot = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal();
             BlockType type = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal().getState().getType();
+            World world = ((ChangeBlockEvent.Break) event).getTargetWorld();
             
-            if (this.acceptedBlocks.get(skill).contains(type) && !this.blockTrackers.get(((ChangeBlockEvent.Break) event).getTargetWorld().getUniqueId()).isBeingTracked(snapshot.getLocation().get().getBlockPosition(), player.getPlayerUUID())) {
+            if (this.acceptedBlocks.get(skill).contains(type) && !this.blockTrackers.get(world.getUniqueId()).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
                 player.giveExperience(1, skill);
                 //TODO Check how much experience this block gives
+            }
+            
+            if (this.blockTrackers.get(world.getUniqueId()).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
+                this.blockTrackers.get(world.getUniqueId()).removeBlock(snapshot.getPosition(), player.getPlayerUUID());
             }
         }
         
@@ -231,9 +236,7 @@ public final class Main {
                         break;
                     case "P":
                         if (worldUUID == null) {
-                            this.logger.error("Player UUID read but no world UUID has been read");
-                            this.blockTrackers.clear();
-                            return;
+                            throw new IOException("Player UUID read but no world UUID has been read");
                         }
                         this.blockTrackers.get(worldUUID).addBlock(blockPos, uuid);
                         playerFoundLast = true;
@@ -242,6 +245,8 @@ public final class Main {
         }
         catch (IOException ex) {
             this.logger.error("Unable to read world data file", ex);
+            this.logger.debug("Clearing block tracker map...");
+            this.blockTrackers.clear();
         }
     }
     
