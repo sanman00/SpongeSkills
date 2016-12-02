@@ -187,7 +187,7 @@ public final class Main {
         }
         
         if (event instanceof ChangeBlockEvent.Place) {
-            this.blockTrackers.get(player.getWrappedPlayer().getWorld().getUniqueId()).addBlock(((ChangeBlockEvent.Place) event).getTransactions().get(0).getOriginal().getLocation().get().getBlockPosition(), player.getPlayerUUID());
+            this.blockTrackers.get(((ChangeBlockEvent.Place) event).getTargetWorld().getUniqueId()).addBlock(((ChangeBlockEvent.Place) event).getTransactions().get(0).getOriginal().getPosition(), player.getPlayerUUID());
         }
     }
 
