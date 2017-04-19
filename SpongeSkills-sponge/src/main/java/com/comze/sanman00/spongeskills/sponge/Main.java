@@ -125,7 +125,9 @@ public final class Main {
     public void onWorldLoad(LoadWorldEvent e) {
         //Create BlockTrackers for each world
         World world = e.getTargetWorld();
-        this.blockTrackers.put(world.getUniqueId(), new BlockTracker(world));
+        if (world != null) {
+            this.blockTrackers.put(world.getUniqueId(), new BlockTracker(world));
+        }
     }
     
     @Listener
@@ -174,20 +176,20 @@ public final class Main {
         if (event instanceof ChangeBlockEvent.Break) {
             BlockSnapshot snapshot = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal();
             BlockType type = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal().getState().getType();
-            World world = ((ChangeBlockEvent.Break) event).getTargetWorld();
+            UUID world = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getDefault().getWorldUniqueId();
             
-            if (this.acceptedBlocks.get(skill).contains(type) && !this.blockTrackers.get(world.getUniqueId()).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
+            if (this.acceptedBlocks.get(skill).contains(type) && !this.blockTrackers.get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
                 player.giveExperience(1, skill);
                 //TODO Check how much experience this block gives
             }
             
-            if (this.blockTrackers.get(world.getUniqueId()).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
-                this.blockTrackers.get(world.getUniqueId()).removeBlock(snapshot.getPosition(), player.getPlayerUUID());
+            if (this.blockTrackers.get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
+                this.blockTrackers.get(world).removeBlock(snapshot.getPosition(), player.getPlayerUUID());
             }
         }
         
         if (event instanceof ChangeBlockEvent.Place) {
-            this.blockTrackers.get(((ChangeBlockEvent.Place) event).getTargetWorld().getUniqueId()).addBlock(((ChangeBlockEvent.Place) event).getTransactions().get(0).getOriginal().getPosition(), player.getPlayerUUID());
+            this.blockTrackers.get(((ChangeBlockEvent.Place) event).getTransactions().get(0).getDefault().getWorldUniqueId()).addBlock(((ChangeBlockEvent.Place) event).getTransactions().get(0).getOriginal().getPosition(), player.getPlayerUUID());
         }
     }
 

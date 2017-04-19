@@ -1,5 +1,6 @@
 package com.comze.sanman00.spongeskills.sponge.config;
 
+import com.comze.sanman00.spongeskills.api.skill.DefaultSkills;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.sponge.Main;
 import com.google.common.collect.ImmutableMap;
@@ -11,26 +12,27 @@ import java.util.Set;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.block.ChangeBlockEvent;
 
 /**
  * Handles what causes skills to be triggered.
  */
 public final class SkillTriggerDataManager {
-    private static final Map<Skill, Set<Event>> SKILL_TRIGGERS = Maps.newHashMap();
+    private static final Map<Skill, Set<Class<? extends Event>>> SKILL_TRIGGERS = Maps.newHashMap();
     //Defaults are provided in case the config does not contain a set of block triggers
     public static final Set<BlockType> DEFAULT_MINING_BLOCK_TRIGGERS = ImmutableSet.of(BlockTypes.STONE, BlockTypes.COBBLESTONE, BlockTypes.IRON_ORE, BlockTypes.GOLD_ORE, BlockTypes.DIAMOND_ORE, BlockTypes.REDSTONE_ORE, BlockTypes.COAL_ORE, BlockTypes.OBSIDIAN, BlockTypes.END_STONE);
     public static final Set<BlockType> DEFAULT_WOOD_CUTTING_BLOCK_TRIGGERS = ImmutableSet.of(BlockTypes.LOG, BlockTypes.LOG2);
 
     private SkillTriggerDataManager() {
-        
+        throw new UnsupportedOperationException("Cannot create SkillTriggerDataManager instance");
     }
     
-    public static void registerTrigger(Skill skill, Event event) {
+    public static void registerTrigger(Skill skill, Class<? extends Event> event) {
         if (!SKILL_TRIGGERS.containsKey(skill)) {
             SKILL_TRIGGERS.put(skill, Sets.newHashSet(event));
             return;
         }
-        Set<Event> events = SKILL_TRIGGERS.get(skill);
+        Set<Class<? extends Event>> events = SKILL_TRIGGERS.get(skill);
         
         if (!events.contains(event)) {
             events.add(event);
@@ -40,11 +42,15 @@ public final class SkillTriggerDataManager {
         }
     }
     
-    public static Set<Event> getTriggersFor(Skill skill) {
+    public static Set<Class<? extends Event>> getTriggersFor(Skill skill) {
         return ImmutableSet.copyOf(SKILL_TRIGGERS.getOrDefault(skill, ImmutableSet.of()));
     }
 
-    public static Map<Skill, Set<Event>> getAllTriggers() {
+    public static Map<Skill, Set<Class<? extends Event>>> getAllTriggers() {
         return ImmutableMap.copyOf(SKILL_TRIGGERS);
+    }
+    
+    static {
+        registerTrigger(DefaultSkills.MINING, ChangeBlockEvent.Break.class);
     }
 }

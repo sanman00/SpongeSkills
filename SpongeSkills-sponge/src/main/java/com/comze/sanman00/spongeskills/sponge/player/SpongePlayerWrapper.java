@@ -22,7 +22,7 @@ public final class SpongePlayerWrapper implements PlayerWrapper<Player> {
     }
     
     public SpongePlayerWrapper(UUID uuid) {
-        if (Sponge.getServer().getPlayer(uuid).isPresent()) {
+        if (!Sponge.getServer().getPlayer(uuid).isPresent()) {
             throw new IllegalArgumentException("Expected a valid player UUID");
         }
         this.uuid = uuid;
