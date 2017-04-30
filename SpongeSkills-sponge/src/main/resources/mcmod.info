@@ -2,7 +2,7 @@
     {
         "modid": "spongeskills",
         "name": "SpongeSkills",
-        "version": "${version}",
+        "version": "@{version}",
         "description": "A plugin that adds skills to Minecraft!"
     }
 ]

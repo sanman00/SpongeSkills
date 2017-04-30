@@ -35,7 +35,10 @@ public final class BlockTracker {
 
     public void addBlock(Vector3i loc, UUID uuid) {
         if (this.getWorld().containsBlock(loc)) {
-            Set<Vector3i> set = this.blockOwnerMap.getOrDefault(uuid, new HashSet<>());
+            if (!this.blockOwnerMap.containsKey(uuid)) {
+                this.blockOwnerMap.put(uuid, new HashSet<>());
+            }
+            Set<Vector3i> set = this.blockOwnerMap.get(uuid);
             if (!set.contains(loc)) {
                 set.add(loc);
             }

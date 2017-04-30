@@ -1,20 +1,22 @@
 package com.comze.sanman00.spongeskills.sponge;
 
-import com.comze.sanman00.spongeskills.api.skill.DefaultSkills;
-import com.comze.sanman00.spongeskills.api.skill.Skill;
+import com.comze.sanman00.spongeskills.api.event.EventBase;
+import com.comze.sanman00.spongeskills.api.event.PlayerExperienceChangeEvent;
+import com.comze.sanman00.spongeskills.api.event.SkillTriggerEvent;
 import com.comze.sanman00.spongeskills.sponge.config.ConfigManager;
+import com.comze.sanman00.spongeskills.sponge.config.PluginDataManager;
 import com.comze.sanman00.spongeskills.sponge.config.SkillTriggerDataManager;
 import com.comze.sanman00.spongeskills.sponge.data.ImmutableSkillExperienceData;
 import com.comze.sanman00.spongeskills.sponge.data.SkillExperienceData;
 import com.comze.sanman00.spongeskills.sponge.data.SkillExperienceDataManipulatorBuilder;
-import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerExperienceChangeEvent;
-import com.comze.sanman00.spongeskills.sponge.event.SpongePlayerLevelChangeEvent;
 import com.comze.sanman00.spongeskills.sponge.event.SpongeSkillTriggerEvent;
+import com.comze.sanman00.spongeskills.sponge.event.handler.SpongePlayerExperienceChangeHandler;
+import com.comze.sanman00.spongeskills.sponge.event.handler.SpongeSkillTriggerHandler;
+import com.comze.sanman00.spongeskills.sponge.event.registry.EventRegistryImpl;
 import com.comze.sanman00.spongeskills.sponge.player.SpongePlayerWrapper;
 import com.comze.sanman00.spongeskills.sponge.skill.SpongeDefaultSkills;
 import com.comze.sanman00.spongeskills.sponge.tracker.BlockTracker;
 import com.flowpowered.math.vector.Vector3i;
-import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,24 +28,17 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.filter.cause.First;
@@ -53,16 +48,13 @@ import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.chat.ChatTypes;
-import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.World;
 
 @Plugin(id = Main.PLUGIN_ID, name = Main.PLUGIN_NAME, version = Main.PLUGIN_VERSION, description = Main.PLUGIN_DESC)
 public final class Main {
     public static final String PLUGIN_ID = "spongeskills";
     public static final String PLUGIN_NAME = "SpongeSkills";
-    public static final String PLUGIN_VERSION = "0.0.5";
+    public static final String PLUGIN_VERSION = "@{version}";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
     public static final Main INSTANCE = new Main();
     @Inject
@@ -71,10 +63,8 @@ public final class Main {
     @Inject
     private Logger logger;
     private ConfigManager configManager;
-    private CommentedConfigurationNode acceptedBlocksNode;
-    private Map<Skill, Set<BlockType>> acceptedBlocks;
-    private Map<UUID, BlockTracker> blockTrackers;
-    private Path blockOwnershipDataFile;
+    private Consumer<PlayerExperienceChangeEvent> playerExpChangeHandler;
+    private Consumer<SkillTriggerEvent> skillTriggerHandler;
 
     public Main() {
         
@@ -102,18 +92,12 @@ public final class Main {
         //Load config
         this.configManager = new ConfigManager(this.configDir.toAbsolutePath().resolve("config.hocon"));
         this.configManager.load();
-        this.acceptedBlocksNode = this.configManager.getConfig().getNode("Skills", "AcceptedBlocks");
-        try {
-            Map<Skill, Set<BlockType>> skillBlockMap = new HashMap<>();
-            skillBlockMap.put(DefaultSkills.MINING, SkillTriggerDataManager.DEFAULT_MINING_BLOCK_TRIGGERS);
-            skillBlockMap.put(DefaultSkills.WOOD_CUTTING, SkillTriggerDataManager.DEFAULT_WOOD_CUTTING_BLOCK_TRIGGERS);
-            this.acceptedBlocks = this.acceptedBlocksNode.getValue(new TypeToken<Map<Skill, Set<BlockType>>>() {}, skillBlockMap);
-        }
-        catch (ObjectMappingException ex) {
-            ex.printStackTrace();
-        }
-        this.blockTrackers = new HashMap<>();
-        this.blockOwnershipDataFile = this.configDir.resolve("block_ownership.dat");
+        PluginDataManager.init(this.configManager);
+        //Create and register plugin event handlers
+        this.skillTriggerHandler = new SpongeSkillTriggerHandler();
+        this.playerExpChangeHandler = new SpongePlayerExperienceChangeHandler();
+        EventRegistryImpl.IMPL_INSTANCE.registerEventHandler(PlayerExperienceChangeEvent.class, this.playerExpChangeHandler);
+        EventRegistryImpl.IMPL_INSTANCE.registerEventHandler(SkillTriggerEvent.class, this.skillTriggerHandler);
     }
     
     @Listener
@@ -126,20 +110,21 @@ public final class Main {
         //Create BlockTrackers for each world
         World world = e.getTargetWorld();
         if (world != null) {
-            this.blockTrackers.put(world.getUniqueId(), new BlockTracker(world));
+            PluginDataManager.getBlockTrackers().put(world.getUniqueId(), new BlockTracker(world));
         }
     }
     
     @Listener
     public void onWorldUnload(UnloadWorldEvent e) {
         //Remove world as it is not being used
-        this.blockTrackers.remove(e.getTargetWorld().getUniqueId());
+        //TODO maybe save the data beforehand so it is not lost?
+        //PluginDataManager.getBlockTrackers().remove(e.getTargetWorld().getUniqueId());
     }
     
     @Listener
     public void onEventFire(Event event, @First Player player) {
         SkillTriggerDataManager.getAllTriggers().entrySet().stream()
-                .filter(entry -> entry.getValue().contains(event))
+                .filter(entry -> entry.getValue().contains(event.getClass()))
                 .forEach(entry -> {
                     Sponge.getEventManager().post(SpongeSkillTriggerEvent.builder()
                             .cause(Cause.of(NamedCause.of("Event", event), NamedCause.of("Firer", Sponge.getPluginManager().getPlugin(PLUGIN_ID).get())))
@@ -148,6 +133,11 @@ public final class Main {
                             .build()
                     );
                 });
+        if (event instanceof EventBase) {
+            @SuppressWarnings("unchecked")
+            Class<EventBase> eventClass = (Class<EventBase>) (Class) event.getClass();
+            EventRegistryImpl.IMPL_INSTANCE.getHandlersForEvent(eventClass).forEach(handler -> handler.accept((EventBase) event));
+        }
     }
     
     @Listener
@@ -155,47 +145,10 @@ public final class Main {
         this.configManager.save();
         this.writeWorldData();
     }
-    
-    // Plugin Event Handlers
-    
-    @Listener
-    public void onPlayerExperienceChange(SpongePlayerExperienceChangeEvent e) {
-        e.getPlayer().getWrappedPlayer().sendMessage(ChatTypes.ACTION_BAR, Text.of(TextColors.YELLOW, "You got" + e.getDifference() + " experience!")); //test
-    }
-    
-    @Listener
-    public void onPlayerLevelChange(SpongePlayerLevelChangeEvent e) {
-        
-    }
-    
-    @Listener
-    public void onSkillTrigger(SpongeSkillTriggerEvent e) {
-        Event event = e.getCause().first(Event.class).get();
-        Skill skill = e.getSkill();
-        SpongePlayerWrapper player = e.getPlayer();
-        if (event instanceof ChangeBlockEvent.Break) {
-            BlockSnapshot snapshot = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal();
-            BlockType type = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal().getState().getType();
-            UUID world = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getDefault().getWorldUniqueId();
-            
-            if (this.acceptedBlocks.get(skill).contains(type) && !this.blockTrackers.get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
-                player.giveExperience(1, skill);
-                //TODO Check how much experience this block gives
-            }
-            
-            if (this.blockTrackers.get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
-                this.blockTrackers.get(world).removeBlock(snapshot.getPosition(), player.getPlayerUUID());
-            }
-        }
-        
-        if (event instanceof ChangeBlockEvent.Place) {
-            this.blockTrackers.get(((ChangeBlockEvent.Place) event).getTransactions().get(0).getDefault().getWorldUniqueId()).addBlock(((ChangeBlockEvent.Place) event).getTransactions().get(0).getOriginal().getPosition(), player.getPlayerUUID());
-        }
-    }
 
     private void readWorldData() {
         int bytesRead = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(this.blockOwnershipDataFile.toFile()))))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(PluginDataManager.getBlockOwnershipDataFile().toFile()))))) {
             char[] readBuffer = new char[1024];
             List<char[]> chars = new ArrayList<>();
             
@@ -233,14 +186,14 @@ public final class Main {
                 switch (line[0]) {
                     case "W":
                         worldUUID = uuid;
-                        this.blockTrackers.put(uuid, new BlockTracker(uuid));
+                        PluginDataManager.getBlockTrackers().put(uuid, new BlockTracker(uuid));
                         playerFoundLast = false;
                         break;
                     case "P":
                         if (worldUUID == null) {
                             throw new IOException("Player UUID read but no world UUID has been read");
                         }
-                        this.blockTrackers.get(worldUUID).addBlock(blockPos, uuid);
+                        PluginDataManager.getBlockTrackers().get(worldUUID).addBlock(blockPos, uuid);
                         playerFoundLast = true;
                 }
             }
@@ -248,13 +201,13 @@ public final class Main {
         catch (IOException ex) {
             this.logger.error("Unable to read world data file", ex);
             this.logger.debug("Clearing block tracker map...");
-            this.blockTrackers.clear();
+            PluginDataManager.getBlockTrackers().clear();
         }
     }
     
     private void writeWorldData() {
-        this.blockTrackers.forEach((worldID, tracker) -> {
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(this.blockOwnershipDataFile.toFile()))))) {
+        PluginDataManager.getBlockTrackers().forEach((worldID, tracker) -> {
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(PluginDataManager.getBlockOwnershipDataFile().toFile()))))) {
                 bw.write("W|" + worldID);
                 bw.newLine();
                 tracker.getBlockOwnerMap().forEach((uuid, locations) -> {

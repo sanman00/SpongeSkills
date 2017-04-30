@@ -14,3 +14,6 @@ hs_err_pid*
 /SpongeSkills-api/target/
 /SpongeSkills-sponge/target/
 /SpongeSkills-sponge/dependency-reduced-pom.xml
+
+#Python
+/__pycache__

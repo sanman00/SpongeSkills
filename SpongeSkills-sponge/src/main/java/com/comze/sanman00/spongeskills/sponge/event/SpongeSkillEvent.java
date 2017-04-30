@@ -7,29 +7,18 @@ import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 
-public abstract class SpongeSkillEvent implements SkillEvent, Event, Cancellable {
-    private final Cause cause;
+public abstract class SpongeSkillEvent extends AbstractEventBase implements SkillEvent, Cancellable {
     private final Skill skill;
     private boolean cancelled;
 
     public SpongeSkillEvent(Cause cause, Skill skill) {
-        this.cause = cause;
+        super(cause);
         this.skill = skill;
-    }
-
-    @Override
-    public Optional<? extends Object> getEventCause() {
-        return Optional.of(getCause());
     }
 
     @Override
     public Skill getSkill() {
         return this.skill;
-    }
-
-    @Override
-    public Cause getCause() {
-        return this.cause;
     }
     
     @Override
