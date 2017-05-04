@@ -1,0 +1,1 @@
+* Implement how much experience something (e.g. a block or entity) gives to a skill when affected (e.g. broken or killed).

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.spongepowered.api.Sponge;
@@ -34,7 +35,7 @@ public final class BlockTracker {
     }
 
     public void addBlock(Vector3i loc, UUID uuid) {
-        if (this.getWorld().containsBlock(loc)) {
+        if (this.getWorld().isPresent() && this.getWorld().get().containsBlock(loc)) {
             if (!this.blockOwnerMap.containsKey(uuid)) {
                 this.blockOwnerMap.put(uuid, new HashSet<>());
             }
@@ -53,7 +54,7 @@ public final class BlockTracker {
     }
 
     public boolean isBeingTracked(Vector3i loc, UUID uuid) {
-        return this.getWorld().containsBlock(loc) && this.blockOwnerMap.containsKey(uuid) && this.blockOwnerMap.get(uuid).contains(loc);
+        return this.getWorld().isPresent() && this.getWorld().get().containsBlock(loc) && this.blockOwnerMap.containsKey(uuid) && this.blockOwnerMap.get(uuid).contains(loc);
     }
 
     public void removeBlock(Vector3i loc, Player player) {
@@ -61,7 +62,7 @@ public final class BlockTracker {
     }
 
     public void removeBlock(Vector3i loc, UUID uuid) {
-        if (this.getWorld().containsBlock(loc)) {
+        if (this.getWorld().isPresent() && this.getWorld().get().containsBlock(loc)) {
             Set<Vector3i> set = this.blockOwnerMap.get(uuid);
             if (set != null) {
                 if (!set.remove(loc)) {
@@ -75,8 +76,8 @@ public final class BlockTracker {
         }
     }
 
-    public World getWorld() {
-        return Sponge.getServer().getWorld(this.worldID).get();
+    public Optional<World> getWorld() {
+        return Sponge.getServer().getWorld(this.worldID);
     }
 
     public Map<UUID, Set<Vector3i>> getBlockOwnerMap() {
