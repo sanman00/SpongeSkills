@@ -7,7 +7,6 @@ import com.google.common.reflect.TypeToken;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -18,7 +17,7 @@ import org.spongepowered.api.block.BlockType;
  */
 public final class PluginDataManager {
     private static CommentedConfigurationNode acceptedBlocksNode;
-    private static Map<Skill, Set<BlockType>> acceptedBlocks;
+    private static Map<Skill, Map<BlockType, Integer>> acceptedBlocks;
     private static Map<UUID, BlockTracker> blockTrackers;
     private static Path blockOwnershipDataFile;
 
@@ -29,10 +28,10 @@ public final class PluginDataManager {
     public static void init(ConfigManager cm) {
         acceptedBlocksNode = cm.getConfig().getNode("Skills", "AcceptedBlocks");
         try {
-            Map<Skill, Set<BlockType>> skillBlockMap = new HashMap<>();
+            Map<Skill, Map<BlockType, Integer>> skillBlockMap = new HashMap<>();
             skillBlockMap.put(DefaultSkills.MINING, SkillTriggerDataManager.DEFAULT_MINING_BLOCK_TRIGGERS);
             skillBlockMap.put(DefaultSkills.WOOD_CUTTING, SkillTriggerDataManager.DEFAULT_WOOD_CUTTING_BLOCK_TRIGGERS);
-            acceptedBlocks = acceptedBlocksNode.getValue(new TypeToken<Map<Skill, Set<BlockType>>>() {}, skillBlockMap);
+            acceptedBlocks = acceptedBlocksNode.getValue(new TypeToken<Map<Skill, Map<BlockType, Integer>>>() {}, skillBlockMap);
         }
         catch (ObjectMappingException ex) {
             ex.printStackTrace();
@@ -41,7 +40,7 @@ public final class PluginDataManager {
         blockOwnershipDataFile = cm.getConfigPath().resolve("block_ownership.dat");
     }
 
-    public static Map<Skill, Set<BlockType>> getAcceptedBlocks() {
+    public static Map<Skill, Map<BlockType, Integer>> getAcceptedBlocks() {
         return acceptedBlocks;
     }
 

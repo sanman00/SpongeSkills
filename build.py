@@ -2,7 +2,7 @@ import os
 import glob
 
 files = [x for x in os.listdir() + glob.glob("*/**", recursive = True) if os.path.isfile(x) and not (x.startswith("build") and x.endswith(".py"))]
-version = "0.0.6pre0"
+version = "0.0.6"
 
 def replace_text(text_to_replace, replacement):
     for file in files:

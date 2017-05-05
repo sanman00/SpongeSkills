@@ -4,6 +4,7 @@ import com.comze.sanman00.spongeskills.api.event.SkillTriggerEvent;
 import com.comze.sanman00.spongeskills.api.skill.Skill;
 import com.comze.sanman00.spongeskills.sponge.config.PluginDataManager;
 import com.comze.sanman00.spongeskills.sponge.player.SpongePlayerWrapper;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -22,10 +23,12 @@ public class SpongeSkillTriggerHandler implements Consumer<SkillTriggerEvent> {
             BlockSnapshot snapshot = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal();
             BlockType type = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal().getState().getType();
             UUID world = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getDefault().getWorldUniqueId();
-            
-            if (PluginDataManager.getAcceptedBlocks().get(skill).contains(type) && !PluginDataManager.getBlockTrackers().get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
-                player.giveExperience(1, skill);
-                //TODO Check how much experience this block gives
+            Map<BlockType, Integer> acceptedBlocksForSkill = PluginDataManager.getAcceptedBlocks().get(skill);
+            if (acceptedBlocksForSkill != null && acceptedBlocksForSkill.containsKey(type) && !PluginDataManager.getBlockTrackers().get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
+                Integer expToGive = acceptedBlocksForSkill.get(type);
+                if (expToGive != null) {
+                    player.giveExperience(expToGive, skill);
+                }
             }
             
             if (PluginDataManager.getBlockTrackers().get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
