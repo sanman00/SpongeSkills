@@ -42,6 +42,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
@@ -144,6 +145,12 @@ public final class Main {
     public void onServerStopping(GameStoppingServerEvent e) {
         this.configManager.save();
         this.writeWorldData();
+    }
+
+    @Listener
+    public void onGameReload(GameReloadEvent e) {
+        this.readWorldData();
+        this.configManager.load();
     }
 
     private void readWorldData() {
