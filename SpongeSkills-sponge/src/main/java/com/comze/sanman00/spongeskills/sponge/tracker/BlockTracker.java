@@ -44,7 +44,7 @@ public final class BlockTracker {
                 set.add(loc);
             }
             else {
-                Main.INSTANCE.getLogger().debug("Location already being tracked!");
+                Main.getInstance().getLogger().debug("Location already being tracked!");
             }
         }
     }
@@ -66,12 +66,12 @@ public final class BlockTracker {
             Set<Vector3i> set = this.blockOwnerMap.get(uuid);
             if (set != null) {
                 if (!set.remove(loc)) {
-                    Main.INSTANCE.getLogger().debug("Location " + loc + " not being tracked");
+                    Main.getInstance().getLogger().debug("Location " + loc + " not being tracked");
                 }
             }
 
             else {
-                Main.INSTANCE.getLogger().debug("Player UUID " + uuid + " not in map");
+                Main.getInstance().getLogger().debug("Player UUID " + uuid + " not in map");
             }
         }
     }

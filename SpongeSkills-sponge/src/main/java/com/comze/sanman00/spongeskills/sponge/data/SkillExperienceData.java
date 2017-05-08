@@ -14,6 +14,9 @@ import org.spongepowered.api.data.manipulator.mutable.common.AbstractMappedData;
 import org.spongepowered.api.data.merge.MergeFunction;
 
 public class SkillExperienceData extends AbstractMappedData<Skill, SkillExperience, SkillExperienceData, ImmutableSkillExperienceData> {
+    public static final String PLUGIN_DATA_NAME = "SkillExperience";
+    public static final String PLUGIN_MANIPULATOR_ID = "skill-exp";
+
     public SkillExperienceData() {
         this(Maps.newHashMap());
     }

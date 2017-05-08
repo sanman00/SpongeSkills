@@ -21,8 +21,8 @@ public class SpongeSkillTriggerHandler implements Consumer<SkillTriggerEvent> {
         SpongePlayerWrapper player = (SpongePlayerWrapper) e.getPlayer();
         if (event instanceof ChangeBlockEvent.Break) {
             BlockSnapshot snapshot = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal();
-            BlockType type = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getOriginal().getState().getType();
-            UUID world = ((ChangeBlockEvent.Break) event).getTransactions().get(0).getDefault().getWorldUniqueId();
+            BlockType type = snapshot.getState().getType();
+            UUID world = snapshot.getWorldUniqueId();
             Map<BlockType, Integer> acceptedBlocksForSkill = PluginDataManager.getAcceptedBlocks().get(skill);
             if (acceptedBlocksForSkill != null && acceptedBlocksForSkill.containsKey(type) && !PluginDataManager.getBlockTrackers().get(world).isBeingTracked(snapshot.getPosition(), player.getPlayerUUID())) {
                 Integer expToGive = acceptedBlocksForSkill.get(type);

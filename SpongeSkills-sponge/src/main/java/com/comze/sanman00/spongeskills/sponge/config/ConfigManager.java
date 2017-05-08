@@ -20,7 +20,7 @@ public class ConfigManager {
     private final Logger logger;
     
     public ConfigManager(Path configFile) {
-        this(Main.INSTANCE.getLogger(), configFile);
+        this(Main.getInstance().getLogger(), configFile);
     }
     
     public ConfigManager(Logger logger, Path configFile) {

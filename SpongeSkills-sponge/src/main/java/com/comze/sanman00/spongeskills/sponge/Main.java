@@ -36,6 +36,7 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Listener;
@@ -49,6 +50,7 @@ import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.world.World;
 
 @Plugin(id = Main.PLUGIN_ID, name = Main.PLUGIN_NAME, version = Main.PLUGIN_VERSION, description = Main.PLUGIN_DESC)
@@ -57,7 +59,8 @@ public final class Main {
     public static final String PLUGIN_NAME = "SpongeSkills";
     public static final String PLUGIN_VERSION = "@{version}";
     public static final String PLUGIN_DESC = "A plugin that adds skills to Minecraft";
-    public static final Main INSTANCE = new Main();
+    @Inject
+    private static PluginContainer pluginContainer;
     @Inject
     @ConfigDir(sharedRoot = false)
     private Path configDir;
@@ -83,12 +86,22 @@ public final class Main {
     public ConfigManager getConfigManager() {
         return this.configManager;
     }
-    
+
+    public static Main getInstance() {
+        return (Main) pluginContainer.getInstance().orElseThrow(() -> new IllegalStateException("Plugin instance not found in plugin container"));
+    }
     // Event handlers
     
     @Listener
     public void onPreInit(GamePreInitializationEvent e) {
-        Sponge.getDataManager().register(SkillExperienceData.class, ImmutableSkillExperienceData.class, new SkillExperienceDataManipulatorBuilder());
+        DataRegistration<SkillExperienceData, ImmutableSkillExperienceData> dr = DataRegistration.builder()
+                .dataClass(SkillExperienceData.class)
+                .immutableClass(ImmutableSkillExperienceData.class)
+                .builder(new SkillExperienceDataManipulatorBuilder())
+                .dataName(SkillExperienceData.PLUGIN_DATA_NAME)
+                .manipulatorId(SkillExperienceData.PLUGIN_MANIPULATOR_ID)
+                .buildAndRegister(pluginContainer);
+        Sponge.getDataManager().registerLegacyManipulatorIds("com.comze.sanman00.spongeskills.sponge.data.SkillExperienceData", dr);
         SpongeDefaultSkills.init();
         //Load config
         this.configManager = new ConfigManager(this.configDir.toAbsolutePath().resolve("config.hocon"));

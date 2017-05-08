@@ -46,7 +46,7 @@ public final class SkillTriggerDataManager {
             events.add(event);
         }
         else {
-            Main.INSTANCE.getLogger().warn("Event " + event + "already registered with skill " + skill + "!");
+            Main.getInstance().getLogger().warn("Event " + event + "already registered with skill " + skill + "!");
         }
     }
     
